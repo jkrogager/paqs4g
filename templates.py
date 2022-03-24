@@ -35,7 +35,6 @@ def assign_template(gaia_fname, p_star=0.4, p_HiBAL=0.40, p_LoBAL=0.02, cat_id='
     p_LoBAL = 0.02
     cat_id = "highBAL"
     # -- Load Gaia Target Catalog
-    gaia_fname = sys.argv[1]
     gaia = Table.read(gaia_fname)
     
     # -- Create empty array for template filename
@@ -51,13 +50,13 @@ def assign_template(gaia_fname, p_star=0.4, p_HiBAL=0.40, p_LoBAL=0.02, cat_id='
     redshift = np.zeros(N_gaia)
     redshift_error = np.zeros(N_gaia)
     
-    
-    
+   
+    # -- Setup Output Filenam
     cat_base, cat_ext = os.path.splitext(gaia_fname)
     catalog_output = "%s_%s.fits" % (cat_base, cat_id)
     
     
-    # -- Stellar Contaminant:
+    # -- Stellar Contaminants:
     N_star = int(N_gaia * p_star)
     N_qso = N_gaia - N_star
     stars = np.zeros(len(gaia), dtype=bool)
@@ -75,7 +74,7 @@ def assign_template(gaia_fname, p_star=0.4, p_HiBAL=0.40, p_LoBAL=0.02, cat_id='
     z_dist = kde.resample(N_qso)[0]
     z_dist[z_dist > 5.] = 5.
     z_dist[z_dist < 0.] = 0.
-    redshift[quasasrs] = z_dist
+    redshift[quasars] = z_dist
     
     
     # -- Krawczyk et al. (2015):

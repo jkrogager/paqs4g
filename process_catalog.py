@@ -53,9 +53,9 @@ def main(fname, dec_cut=10, use_crs=False):
     cat = cat[cat['DEC'] < dec_cut]
     N_removed_dec = np.sum(cat['DEC'] >= dec_cut)
     if N_removed_dec == 1:
-        print(f" Removing %i target with declination > {dec_cut} deg")
+        print(f" Removing %i target with declination > {dec_cut} deg" % N_removed_dec)
     else:
-        print(f" Removing %i targets with declination > {dec_cut} deg")
+        print(f" Removing %i targets with declination > {dec_cut} deg" % N_removed_dec)
     
 
     # -- Define Output Filenames:
@@ -65,14 +65,14 @@ def main(fname, dec_cut=10, use_crs=False):
     
     
     # -- Manual Fixes:
-    cat['DATE_EARLIEST'] = 0 * u.d
-    cat['DATE_LATEST'] = 0 * u.d
-    cat['EXTENT_PARAMETER'] = 0.0 * u.arcsec
+    cat['DATE_EARLIEST'] = np.zeros(len(cat)) * u.d
+    cat['DATE_LATEST'] = np.zeros(len(cat)) * u.d
+    cat['EXTENT_PARAMETER'] = np.zeros(len(cat)) * u.arcsec
     cat['EXTENT_INDEX'] = 0.
     cat['EXTENT_FLAG'] = 0
     cat['CADENCE'] = 0
     cat['RESOLUTION'] = 1
-    cat['EPOCH'] = EPOCH * u.year
+    cat['EPOCH'] = np.ones(len(cat)) * EPOCH * u.yr
     cat['SUBSURVEY'] = SUBSURVEY_NAME
     
     
@@ -247,7 +247,7 @@ def verify_catalog(catalog_fname, fmt='catalog_format'):
 
     Returns `True` if the verification passed.
     """
-    cat = Table.read(fname, format='fits')
+    cat = Table.read(catalog_fname, format='fits')
     datatype = Table.read(fmt,
                           comment='#',
                           format='ascii.csv',

@@ -1,0 +1,25 @@
+# Data Format Specification of 4FS input catalog
+# As of Mar 23, 2022
+column             ; unit
+NAME               ; 
+RA                 ; deg
+DEC                ; deg
+PMRA               ; mas/yr
+PMDEC              ; mas/yr
+EPOCH              ; yr
+RESOLUTION         ;
+SUBSURVEY          ;
+CADENCE            ;
+TEMPLATE           ;
+RULESET            ;
+REDSHIFT_ESTIMATE  ;
+REDSHIFT_ERROR     ;
+EXTENT_FLAG        ;
+EXTENT_PARAMETER   ; arcsec
+EXTENT_INDEX       ;
+MAG                ; mag
+MAG_ERR            ; mag
+MAG_TYPE           ; 
+REDDENING          ; mag
+DATE_EARLIEST      ; d
+DATE_LATEST        ; d

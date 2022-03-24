@@ -40,7 +40,6 @@ REDDENING_UNIT = 'mag'
     
 # ---------------------------------- 
 
-
 def main(fname, dec_cut=10, use_crs=False):
     """
     Process the raw input catalog from `fname`.
@@ -50,8 +49,9 @@ def main(fname, dec_cut=10, use_crs=False):
     cat = Table.read(fname, format='fits')
 
     # -- Cut coordinates:
-    cat = cat[cat['DEC'] < dec_cut]
-    N_removed_dec = np.sum(cat['DEC'] >= dec_cut)
+    dec_criterion = cat['DEC'] < dec_cut
+    cat = cat[dec_criterion]
+    N_removed_dec = np.sum(~dec_criterion)
     if N_removed_dec == 1:
         print(f" Removing %i target with declination > {dec_cut} deg" % N_removed_dec)
     else:
@@ -60,8 +60,8 @@ def main(fname, dec_cut=10, use_crs=False):
 
     # -- Define Output Filenames:
     now = datetime.datetime.now().strftime("%Y%m%dT%H%M%SZ")
-    fig_output_fname = f"sky_density_{now}.pdf"
-    cat_output_fname = f"S6_{now}_4GPAQS-target_catalog.fits"
+    fig_output_fname = f"output/sky_density_{now}.pdf"
+    cat_output_fname = f"output/S6_{now}_4GPAQS-target_catalog.fits"
     
     
     # -- Manual Fixes:
@@ -73,6 +73,8 @@ def main(fname, dec_cut=10, use_crs=False):
     cat['CADENCE'] = 0
     cat['RESOLUTION'] = 1
     cat['EPOCH'] = np.ones(len(cat)) * EPOCH * u.yr
+    if 'SUBSURVEY' in cat.columns:
+        cat.remove_column('SUBSURVEY')
     cat['SUBSURVEY'] = SUBSURVEY_NAME
     
     
@@ -81,16 +83,16 @@ def main(fname, dec_cut=10, use_crs=False):
         cat.rename_column('GMAG', 'MAG')
         cat.rename_column('GMAG_ERR', 'MAG_ERR')
     
+    if 'MAG_TYPE' in cat.columns:
+        cat.remove_column('MAG_TYPE')
+
     if MAG_TYPE == 'VEGA':
-        magtype = np.zeros(len(cat), dtype='U11')
-        magtype[:] = 'GAIA_G_VEGA'
-        cat['MAG_TYPE'] = magtype
+        cat['MAG_TYPE'] = 'GAIA_G_VEGA'
     elif MAG_TYPE == 'AB':
-        magtype = np.zeros(len(cat), dtype='U9')
-        magtype[:] = 'GAIA_G_AB'
-        cat['MAG_TYPE'] = magtype
+        cat['MAG_TYPE'] = 'GAIA_G_AB'
     else:
         print(f"Unknown {MAG_TYPE=}")
+        print("Must be AB or VEGA")
     
     
     # -- Verify and/or Apply Units:
@@ -302,7 +304,11 @@ if __name__ == '__main__':
 
     else:
         from templates import assign_template
-        catalog_name = main(args.filename)
+
+        if not os.path.exists('output'):
+            os.mkdir('output')
+
+        catalog_name = main(args.filename, dec_cut=args.cut)
         catalog_name = assign_template(
                 catalog_name,
                 p_star=args.star,

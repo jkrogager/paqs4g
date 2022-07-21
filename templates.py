@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Update templates and rules
+"""
 
 import numpy as np
 from scipy import stats
@@ -75,7 +78,7 @@ def assign_template(gaia_fname, p_star=0.4, p_HiBAL=0.40, p_LoBAL=0.02, cat_id='
     z_dist = kde.resample(N_qso)[0]
     z_dist[z_dist > 5.] = 5.
     z_dist[z_dist < 0.] = 0.
-    redshift[quasasrs] = z_dist
+    redshift[quasars] = z_dist
     
     
     # -- Krawczyk et al. (2015):

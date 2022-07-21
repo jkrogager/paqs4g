@@ -1,13 +1,5 @@
 import datetime
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-
 from astroquery.gaia import Gaia
-from astropy import table
-from astropy.coordinates import SkyCoord
-import astropy.units as u
-from astropy.table import Table, join_skycoord
 
 def get_gaia_catalog(catalog_fname):
     QUERY = """
@@ -30,15 +22,20 @@ def get_gaia_catalog(catalog_fname):
         AND parallax_over_error < 3
         AND phot_g_mean_mag < 20.5
     """
+    print("Connecting to Gaia server...")
     job = Gaia.launch_job_async(QUERY, dump_to_file=True,
                                 output_format='fits', verbose=False,
                                 output_file=catalog_fname)
     result = job.get_results()
+    print("Done :)")
     return result
 
 
-raw_cat = get_gaia_catalog('raw_catalog_tmp.fits')
-
-
+if __name__ == '__main__':
+    now = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    cat_fname = f'raw_catalog_{now}.fits'
+    raw_cat = get_gaia_catalog(cat_fname)
+    print("Saved catalog from Gaia database:")
+    print(cat_fname)
 
 

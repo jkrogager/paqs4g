@@ -1,0 +1,126 @@
+
+4MOST surveys: target-catalogue provenance
+==========================================
+
+Justification: It is anticipated that multiple versions of target
+catalogues for the same 4MOST survey and sub survey will be uploaded
+to 4FS. This is inevitable as surveys refine their target-selection
+approaches and success criteria to ensure the delivery of successful
+survey programs. To be able to understand the differences between the
+various uploaded catalogues it is necessary to capture key information
+for each uploaded catalogue.
+
+Please fill out this document and answer the subsequent questions to
+provide clear information on the provenance of the uploaded target
+catalogue. Note a survey should submit a single document that describes
+all of the sub surveys, separately addressing all questions for each
+sub survey.
+
+Your answers can include a reference to a paper or any other easily
+accessible document or alternatively to provide a link. However, it is
+critical that the description is applicable to the specific uploaded
+catalogue: a link to a target-catalogue description that can change
+and evolve over time is not suitable – it should remain static to
+represent the details of the uploaded catalogue. In addition you will
+also need to upload your target-selection code and, consequently,
+information on the specific target-selection criteria is not required
+in this document.
+
+-----
+
+Please provide directly below the title of your survey along with a
+list of all associated sub surveys; i.e., please list each sub-survey
+number/name along with a very brief description of the sub survey.
+
+
+Survey title:
+
+List of sub surveys:
+
+
+
+========================================================================
+PLEASE FILL OUT THE FORM BELOW AND ANSWER THE FOLLOWING QUESTIONS FOR
+EACH SURVEY/SUB SURVEY CUTTING AND PASTING THE FORM AND QUESTIONS FOR
+EACH SUB SURVEY WHEN APPROPRIATE
+========================================================================
+
+Survey (or sub survey) number: S605
+Survey (or sub survey) title: PAQS
+Author: Jens-Kristian Krogager; Kasper E. Heintz
+Email address: jens-kristian.krogager@univ-lyon1.fr; keheintz@nbi.ku.dk
+
+------------------------------------------------------------------------
+What images and catalogues are used to construct the target catalogue?
+Include image and catalogue version numbers when appropriate.
+
+All data are taken from Gaia DR3.
+
+
+------------------------------------------------------------------------
+How are the target coordinates determined (e.g., central pixel,
+brightest pixel, etc)?
+
+Following the Gaia DR3 catalog.
+
+
+------------------------------------------------------------------------
+How is the target photometry measured?
+
+Following the Gaia DR3 catalog.
+
+------------------------------------------------------------------------
+How are target photometric redshifts and associated uncertainties
+estimated (if relevant)?
+
+N/A
+
+------------------------------------------------------------------------
+How is the foreground reddening towards the target calculated?
+
+Using the maps by Schlafly & Finkbeiner (2011)
+
+------------------------------------------------------------------------
+What approach and assumptions are made for the selection of the target
+spectral templates?
+
+Since our survey is rather agnostic in terms of sample selection, our targets
+span a broad range of different object types. We have therefore generated a
+large library of spectral templates in order to probe the full range of spectral
+shapes that we expect based on a model of quasar properties:
+redshift distribution (from Palanque-Delabrouille et al. 2016), intrinsic dust reddening,
+and BALs) as well as expected stellar contamination (following Heintz et al. 2020).
+The distribution of spectral shapes matches broadly the range of observed colors
+(Gaia Blue-Red) of our candidates. All templates are assigned randomly using a
+probabilistic approach.
+
+
+------------------------------------------------------------------------
+Is the same target included more than once in the sub-survey catalogue
+but with a different spectral template and/or ruleset? If yes then
+please provide a brief justification.
+
+No
+
+
+------------------------------------------------------------------------
+Any additional critical notes:
+
+Sources have been selected based on three cuts:
+ - PM/PM_err < 2
+ - PLX/PLX_err < 3
+ - G < 20.5 mag
+Where PM = proper motion and PLX = parallax. All data are taken from Gaia EDR3.
+
+We have further excluded regions with very high target density as these are caused
+by foreground dwarf galaxies with resolved stars. These are excluded by rejecting
+healpix pixels with a target density larger than 4*sigma above the median, where
+sigma is estimated using the robust median absolute deviation (sigma = 2.5*MAD).
+We also reject incomplete healpix pixels along the edge of the footprint where the
+target density drops below the median by 2-sigma.
+
+
+========================================================================
+NOTE: PLEASE CUT AND PASTE THE ABOVE FORM AND ADDRESS THE QUESTIONS
+SEPARATELY FOR EACH SUB SURVEY WHEN APPROPRIATE
+

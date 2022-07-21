@@ -41,7 +41,6 @@ REDDENING_UNIT = 'mag'
 
 # ---------------------------------- 
 
-
 def main(fname, dec_cut=10, use_crs=False):
     """
     Process the raw input catalog from `fname`.
@@ -57,30 +56,33 @@ def main(fname, dec_cut=10, use_crs=False):
     # -- Cut coordinates:
     coords = coord.SkyCoord(cat['RA'], cat['DEC'])
     long_cut = coords.galactic.b < -62 * u.deg
+    dec_criterion = cat['DEC'] < dec_cut
     cat = cat[long_cut]
-    cat = cat[cat['DEC'] < dec_cut]
-    N_removed_dec = np.sum(cat['DEC'] >= dec_cut)
+    cat = cat[dec_criterion]
+    N_removed_dec = np.sum(~dec_criterion)
     if N_removed_dec == 1:
-        print(f" Removing %i target with declination > {dec_cut} deg")
+        print(f" Removing %i target with declination > {dec_cut} deg" % N_removed_dec)
     else:
-        print(f" Removing %i targets with declination > {dec_cut} deg")
+        print(f" Removing %i targets with declination > {dec_cut} deg" % N_removed_dec)
     
 
     # -- Define Output Filenames:
     now = datetime.datetime.now().strftime("%Y%m%dT%H%M%SZ")
-    fig_output_fname = f"sky_density_{now}.pdf"
-    cat_output_fname = f"S6_{now}_4GPAQS-target_catalog.fits"
+    fig_output_fname = f"output/sky_density_{now}.pdf"
+    cat_output_fname = f"output/S6_{now}_4GPAQS-target_catalog.fits"
     
     
     # -- Manual Fixes:
-    cat['DATE_EARLIEST'] = 0 * u.d
-    cat['DATE_LATEST'] = 0 * u.d
-    cat['EXTENT_PARAMETER'] = 0.0 * u.arcsec
+    cat['DATE_EARLIEST'] = np.zeros(len(cat)) * u.d
+    cat['DATE_LATEST'] = np.zeros(len(cat)) * u.d
+    cat['EXTENT_PARAMETER'] = np.zeros(len(cat)) * u.arcsec
     cat['EXTENT_INDEX'] = 0.
     cat['EXTENT_FLAG'] = 0
     cat['CADENCE'] = 0
     cat['RESOLUTION'] = 1
-    cat['EPOCH'] = EPOCH * u.year
+    cat['EPOCH'] = np.ones(len(cat)) * EPOCH * u.yr
+    if 'SUBSURVEY' in cat.columns:
+        cat.remove_column('SUBSURVEY')
     cat['SUBSURVEY'] = SUBSURVEY_NAME
     cat['CLASSIFICATION'] = TARGET_CLASS
     
@@ -93,6 +95,9 @@ def main(fname, dec_cut=10, use_crs=False):
     if 'SOURCE_ID' in cat.colnames:
         cat.rename_column('SOURCE_ID', 'GAIA_ID')
     
+    if 'MAG_TYPE' in cat.columns:
+        cat.remove_column('MAG_TYPE')
+
     if MAG_TYPE == 'VEGA':
         magtype = np.zeros(len(cat), dtype='U11')
         magtype[:] = 'Gaia_G_Vega'
@@ -326,7 +331,11 @@ if __name__ == '__main__':
 
     else:
         from templates import assign_template
-        catalog_name = main(args.filename)
+
+        if not os.path.exists('output'):
+            os.mkdir('output')
+
+        catalog_name = main(args.filename, dec_cut=args.cut)
         catalog_name = assign_template(
                 catalog_name,
                 p_star=args.star,

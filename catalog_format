@@ -23,3 +23,15 @@ MAG_TYPE           ;
 REDDENING          ; mag
 DATE_EARLIEST      ; d
 DATE_LATEST        ; d
+# New columns as of version 2.0
+TEMPLATE_REDSHIFT  ; 
+CAL_MAG_BLUE       ; mag
+CAL_MAG_ERR_BLUE   ; mag
+CAL_MAG_ID_BLUE    ; mag
+CAL_MAG_GREEN      ; mag
+CAL_MAG_ERR_GREEN  ; mag
+CAL_MAG_ID_GREEN   ; mag
+CAL_MAG_RED        ; mag
+CAL_MAG_ERR_RED    ; mag
+CAL_MAG_ID_RED     ; mag
+CLASSIFICATION     ; 

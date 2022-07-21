@@ -27,8 +27,9 @@ import sys
 #    Make sure that these match the values in the input catalog
 
 MAG_TYPE = 'VEGA'  # VEGA or AB
-SUBSURVEY_NAME = 'S6_4GPAQS'
-EPOCH = 2015.5
+SUBSURVEY_NAME = '0605_PAQS'
+EPOCH = 2016.0
+TARGET_CLASS = 'UNKNOWN'
 
 RA_UNIT = 'deg'
 DEC_UNIT = 'deg'
@@ -37,7 +38,7 @@ PMDEC_UNIT = 'mas/yr'
 MAG_UNIT = 'mag'
 MAG_ERR_UNIT = 'mag'
 REDDENING_UNIT = 'mag'
-    
+
 # ---------------------------------- 
 
 
@@ -49,7 +50,14 @@ def main(fname, dec_cut=10, use_crs=False):
     """
     cat = Table.read(fname, format='fits')
 
+    # Convert all table column names to upper case:
+    for colname in cat.colnames:
+        cat.rename_column(colname, colname.upper())
+
     # -- Cut coordinates:
+    coords = coord.SkyCoord(cat['RA'], cat['DEC'])
+    long_cut = coords.galactic.b < -62 * u.deg
+    cat = cat[long_cut]
     cat = cat[cat['DEC'] < dec_cut]
     N_removed_dec = np.sum(cat['DEC'] >= dec_cut)
     if N_removed_dec == 1:
@@ -74,31 +82,58 @@ def main(fname, dec_cut=10, use_crs=False):
     cat['RESOLUTION'] = 1
     cat['EPOCH'] = EPOCH * u.year
     cat['SUBSURVEY'] = SUBSURVEY_NAME
+    cat['CLASSIFICATION'] = TARGET_CLASS
     
     
     # -- Fix Mag Column Names:
     if 'GMAG' in cat.columns:
         cat.rename_column('GMAG', 'MAG')
         cat.rename_column('GMAG_ERR', 'MAG_ERR')
+
+    if 'SOURCE_ID' in cat.colnames:
+        cat.rename_column('SOURCE_ID', 'GAIA_ID')
     
     if MAG_TYPE == 'VEGA':
         magtype = np.zeros(len(cat), dtype='U11')
-        magtype[:] = 'GAIA_G_VEGA'
+        magtype[:] = 'Gaia_G_Vega'
         cat['MAG_TYPE'] = magtype
     elif MAG_TYPE == 'AB':
         magtype = np.zeros(len(cat), dtype='U9')
-        magtype[:] = 'GAIA_G_AB'
+        magtype[:] = 'Gaia_G_AB'
         cat['MAG_TYPE'] = magtype
     else:
         print(f"Unknown {MAG_TYPE=}")
+
+    # Check that all three calibration magnitudes are present:
+    try:
+        cat.rename_column('RPMAG', 'CAL_MAG_RED')
+        cat.rename_column('RPMAG_ERR', 'CAL_MAG_ERR_RED')
+        cat['CAL_MAG_ID_RED'] = 'GAIA_GRP_AB_PSF'
+
+        cat.rename_column('BPMAG', 'CAL_MAG_BLUE')
+        cat.rename_column('BPMAG_ERR', 'CAL_MAG_ERR_BLUE')
+        cat['CAL_MAG_ID_BLUE'] = 'GAIA_GBP_AB_PSF'
+
+        cat['CAL_MAG_GREEN'] = cat['MAG']
+        cat['CAL_MAG_ERR_GREEN'] = cat['MAG_ERR']
+        cat['CAL_MAG_ID_GREEN'] = 'GAIA_G_AB_PSF'
+    except Exception as e:
+        print("Couldn't find all calibration magnitudes!")
+        print(e)
+        print("Moving on...")
     
     
     # -- Verify and/or Apply Units:
-    column_names = ['RA', 'DEC', 'PMRA', 'PMDEC', 'MAG', 'MAG_ERR', 'REDDENING']
-    column_units = [RA_UNIT, DEC_UNIT, PMRA_UNIT, PMDEC_UNIT, MAG_UNIT, MAG_ERR_UNIT, REDDENING_UNIT]
-    for cname, cunit in zip(column_names, column_units):
-        if cat[cname].unit is None:
-            cat[cname] *= u.Unit(cunit)
+    column_names = ['RA', 'DEC', 'PMRA', 'PMDEC', 'REDDENING']
+    column_units = [RA_UNIT, DEC_UNIT, PMRA_UNIT, PMDEC_UNIT, REDDENING_UNIT]
+    for colname, cunit in zip(column_names, column_units):
+        if cat[colname].unit is None:
+            cat[colname] = cat[colname] * u.Unit(cunit)
+
+    # Verify or apply magnitude units:
+    for colname in cat.colnames:
+        if 'MAG' in colname and cat[colname].unit is None:
+            cat[colname] = cat[colname] * u.Unit('mag')
     
     
     # -- Define healpix indices and their coordinates
@@ -136,33 +171,10 @@ def main(fname, dec_cut=10, use_crs=False):
                                nest=True)
     ipix_sub1, numInPix_sub1 = np.unique(ipix_sub1_all, return_counts=True)
     
-    # sub2 = FAINT TARGETS
-    ipix_sub2 = hp.ang2pix(nside,
-                           (np.pi/2. - dec[FAINT]*np.pi/180.),
-                           (ra[FAINT]*np.pi/180.),
-                           nest=True)
-    ipix_sub2, numInPix_sub2 = np.unique(ipix_sub2, return_counts=True)
-    
-    # sub3 = BRIGHT TARGETS
-    ipix_sub3 = hp.ang2pix(nside,
-                           (np.pi/2. - dec[BRIGHT]*np.pi/180.),
-                           (ra[BRIGHT]*np.pi/180.),
-                           nest=True)
-    ipix_sub3, numInPix_sub3 = np.unique(ipix_sub3, return_counts=True)
-    
-    
     # -- Define the target density for each pixel:
     target_N = np.zeros(npix)
     target_N[ipix_sub1] = numInPix_sub1
     target_N[target_N == 0.0] = np.nan
-    
-    target_N2 = np.zeros(npix)
-    target_N2[ipix_sub2] = numInPix_sub2
-    target_N2[target_N2 == 0.0] = np.nan
-    
-    target_N3 = np.zeros(npix)
-    target_N3[ipix_sub3] = numInPix_sub3
-    target_N3[target_N3 == 0.0] = np.nan
     
     rho_sub1 = np.zeros(npix)
     rho_sub1[ipix_sub1] = numInPix_sub1 / area_per_pixel
@@ -172,19 +184,19 @@ def main(fname, dec_cut=10, use_crs=False):
     med_N = np.median(numInPix_sub1 / area_per_pixel)
     sig_N = 2.5*np.median(np.abs(numInPix_sub1/area_per_pixel - med_N))
     
-    med_N_bright = np.median(numInPix_sub3 / area_per_pixel)
-    sig_N_bright = 2.5*np.median(np.abs(numInPix_sub3/area_per_pixel - med_N_bright))
-    
-    med_N_faint = np.median(numInPix_sub2 / area_per_pixel)
-    sig_N_faint = 2.5*np.median(np.abs(numInPix_sub2/area_per_pixel - med_N_faint))
-    
     overdense_pixels = (numInPix_sub1/area_per_pixel) > med_N + 4*sig_N
     num_overdense_pixels = np.sum(overdense_pixels)
     overdense_fraction = num_overdense_pixels / len(numInPix_sub1) * 100.
+    # Use a slightly modified threshold to discard incomplete tiles:
+    # sig_N/2.5*1.5 corresponds to ~1 Gaussian sigma.
+    # Reject targets below 2-sigma off the median.
+    # Visually this corresponds to the break in the distribution as well.
+    incomplete_tiles = rho_sub1 < (med_N - sig_N/2.5*1.5*2)
 
     # Remove overdense regions from the plotting array:
     rho_sub1[ipix_sub1[overdense_pixels]] = np.nan
-    rho_sub1[rho_sub1 < 20] = np.nan
+    # Remove incomplete tiles from the plotting array:
+    rho_sub1[incomplete_tiles] = np.nan
     
     survey_pixels = np.sum(rho_sub1 > 0.)
     total_area = area_per_pixel * survey_pixels
@@ -197,13 +209,25 @@ def main(fname, dec_cut=10, use_crs=False):
     # -- Remove dense regions from the catalog:
     dense_mask = sum(ipix_sub1_all == num for num in ipix_sub1[overdense_pixels])
 
+    # -- Remove incomplete tiles from the catalog:
+    dense_mask = sum(ipix_sub1_all == num for num in ipix_sub1[incomplete_tiles])
     
     # -- Remove the brightest targets above G < 15
     #    These are not consistent with the shape of the luminosity function
     toobright = G_Vega < 15.
     
     cat = cat[(dense_mask == 0) & ~toobright]
-    print(" Removing overdense areas from catalog")
+    print(" Removing overdense areas and incomplete tiles along the edge from the catalog")
+
+
+    # -- Assign target names:
+    names = list()
+    for c in coords:
+        name = 'PAQS_' + c.to_string('hmsdms', sep='', precision=2).replace(' ', '')
+        names.append(name)
+    cat.remove_column('NAME')
+    names = np.array(names)
+    cat['NAME'] = names
     
     
     # -- Provide a plot:
@@ -247,7 +271,7 @@ def verify_catalog(catalog_fname, fmt='catalog_format'):
 
     Returns `True` if the verification passed.
     """
-    cat = Table.read(fname, format='fits')
+    cat = Table.read(catalog_fname, format='fits')
     datatype = Table.read(fmt,
                           comment='#',
                           format='ascii.csv',

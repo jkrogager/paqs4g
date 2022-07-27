@@ -54,7 +54,7 @@ def main(fname, dec_cut=10, use_crs=False):
         cat.rename_column(colname, colname.upper())
 
     # -- Cut coordinates:
-    coords = coord.SkyCoord(cat['RA'], cat['DEC'])
+    coords = coord.SkyCoord(cat['RA'], cat['DEC'], unit='deg')
     long_cut = coords.galactic.b < -62 * u.deg
     dec_criterion = cat['DEC'] < dec_cut
     cat = cat[long_cut]

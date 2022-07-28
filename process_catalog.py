@@ -125,13 +125,13 @@ def main(fname, dec_cut=10, use_crs=False):
         zeros = np.zeros(len(cat))
         cat['CAL_MAG_BLUE'] = zeros
         cat['CAL_MAG_ERR_BLUE'] = zeros
-        cat['CAL_MAG_ID_BLUE'] = zeros
+        cat['CAL_MAG_ID_BLUE'] = 'GAIA_GBP_AB_PSF'
         cat['CAL_MAG_GREEN'] = zeros
         cat['CAL_MAG_ERR_GREEN'] = zeros
-        cat['CAL_MAG_ID_GREEN'] = zeros
+        cat['CAL_MAG_ID_GREEN'] = 'GAIA_G_AB_PSF'
         cat['CAL_MAG_RED'] = zeros
         cat['CAL_MAG_ERR_RED'] = zeros
-        cat['CAL_MAG_ID_RED'] = zeros
+        cat['CAL_MAG_ID_RED'] = 'GAIA_GRP_AB_PSF'
         print("Couldn't find all calibration magnitudes! Using 0 values")
     
     
@@ -145,7 +145,7 @@ def main(fname, dec_cut=10, use_crs=False):
     # Verify or apply magnitude units:
     for colname in cat.colnames:
         if 'MAG' in colname and cat[colname].unit is None:
-            if colname == 'MAG_TYPE':
+            if colname == 'MAG_TYPE' or 'CAL_MAG_ID' in colname:
                 pass
             else:
                 cat[colname].unit = 'mag'

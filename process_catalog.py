@@ -132,12 +132,12 @@ def main(fname, dec_cut=10, use_crs=False):
     column_units = [RA_UNIT, DEC_UNIT, PMRA_UNIT, PMDEC_UNIT, REDDENING_UNIT]
     for colname, cunit in zip(column_names, column_units):
         if cat[colname].unit is None:
-            cat[colname] = cat[colname] * u.Unit(cunit)
+            cat[colname].unit = cunit
 
     # Verify or apply magnitude units:
     for colname in cat.colnames:
         if 'MAG' in colname and cat[colname].unit is None:
-            cat[colname] = cat[colname] * u.Unit('mag')
+            cat[colname].unit = 'mag'
     
     
     # -- Define healpix indices and their coordinates

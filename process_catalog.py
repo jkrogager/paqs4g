@@ -137,7 +137,10 @@ def main(fname, dec_cut=10, use_crs=False):
     # Verify or apply magnitude units:
     for colname in cat.colnames:
         if 'MAG' in colname and cat[colname].unit is None:
-            cat[colname].unit = 'mag'
+            if colname == 'MAG_TYPE':
+                pass
+            else:
+                cat[colname].unit = 'mag'
     
     
     # -- Define healpix indices and their coordinates

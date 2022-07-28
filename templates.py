@@ -187,6 +187,7 @@ def assign_template(gaia_fname, p_star=0.4, p_HiBAL=0.40, p_LoBAL=0.02, cat_id='
     gaia['RULESET'] = ruleset
     
     gaia['REDSHIFT_ESTIMATE'] = redshift
+    gaia['TEMPLATE_REDSHIFT'] = redshift
     gaia['REDSHIFT_ERROR'] = redshift_error
     
     gaia.write(catalog_output, overwrite=True)

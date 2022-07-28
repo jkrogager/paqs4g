@@ -57,8 +57,7 @@ def main(fname, dec_cut=10, use_crs=False):
     coords = coord.SkyCoord(cat['RA'], cat['DEC'], unit='deg')
     long_cut = coords.galactic.b < -62 * u.deg
     dec_criterion = cat['DEC'] < dec_cut
-    cat = cat[long_cut]
-    cat = cat[dec_criterion]
+    cat = cat[long_cut & dec_criterion]
     N_removed_dec = np.sum(~dec_criterion)
     if N_removed_dec == 1:
         print(f" Removing %i target with declination > {dec_cut} deg" % N_removed_dec)

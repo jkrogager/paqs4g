@@ -226,6 +226,7 @@ def main(fname, dec_cut=10, use_crs=False):
 
     # -- Assign target names:
     names = list()
+    coords = coord.SkyCoord(cat['RA'], cat['DEC'], unit='deg')
     for c in coords:
         name = 'PAQS_' + c.to_string('hmsdms', sep='', precision=2).replace(' ', '')
         names.append(name)

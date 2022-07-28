@@ -195,12 +195,12 @@ def main(fname, dec_cut=10, use_crs=False):
     # sig_N/2.5*1.5 corresponds to ~1 Gaussian sigma.
     # Reject targets below 2-sigma off the median.
     # Visually this corresponds to the break in the distribution as well.
-    incomplete_tiles = rho_sub1 < (med_N - sig_N/2.5*1.5*2)
+    incomplete_tiles = (numInPix_sub1/area_per_pixel) < (med_N - sig_N/2.5*1.5*2)
 
     # Remove overdense regions from the plotting array:
     rho_sub1[ipix_sub1[overdense_pixels]] = np.nan
     # Remove incomplete tiles from the plotting array:
-    rho_sub1[incomplete_tiles] = np.nan
+    rho_sub1[ipix_sub1[incomplete_tiles]] = np.nan
     
     survey_pixels = np.sum(rho_sub1 > 0.)
     total_area = area_per_pixel * survey_pixels
@@ -214,13 +214,13 @@ def main(fname, dec_cut=10, use_crs=False):
     dense_mask = sum(ipix_sub1_all == num for num in ipix_sub1[overdense_pixels])
 
     # -- Remove incomplete tiles from the catalog:
-    dense_mask = sum(ipix_sub1_all == num for num in ipix_sub1[incomplete_tiles])
+    incomplete_mask = sum(ipix_sub1_all == num for num in ipix_sub1[incomplete_tiles])
     
     # -- Remove the brightest targets above G < 15
     #    These are not consistent with the shape of the luminosity function
     toobright = G_Vega < 15.
     
-    cat = cat[(dense_mask == 0) & ~toobright]
+    cat = cat[(dense_mask == 0) & ~toobright & (incomplete_mask == 0)]
     print(" Removing overdense areas and incomplete tiles along the edge from the catalog")
 
 

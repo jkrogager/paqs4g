@@ -263,6 +263,10 @@ def main(fname, dec_cut=10, use_crs=False):
     fig1.savefig(fig_output_fname, bbox_inches='tight')
     print(f" Saved footprint figure: {fig_output_fname}")
     
+
+    # -- Update header info:
+    cat.meta['FMTDOC'] = 'VIS-MAN-4MOST-47110-1720-0001'
+    cat.meta['FMTVERS'] = '1.1'
     
     # -- Save the catalog:
     cat.write(cat_output_fname, overwrite=True)

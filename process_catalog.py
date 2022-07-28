@@ -122,9 +122,17 @@ def main(fname, dec_cut=10, use_crs=False):
         cat['CAL_MAG_ERR_GREEN'] = cat['MAG_ERR']
         cat['CAL_MAG_ID_GREEN'] = 'GAIA_G_AB_PSF'
     except Exception as e:
-        print("Couldn't find all calibration magnitudes!")
-        print(e)
-        print("Moving on...")
+        zeros = np.zeros(len(cat))
+        cat['CAL_MAG_BLUE'] = zeros
+        cat['CAL_MAG_ERR_BLUE'] = zeros
+        cat['CAL_MAG_ID_BLUE'] = zeros
+        cat['CAL_MAG_GREEN'] = zeros
+        cat['CAL_MAG_ERR_GREEN'] = zeros
+        cat['CAL_MAG_ID_GREEN'] = zeros
+        cat['CAL_MAG_RED'] = zeros
+        cat['CAL_MAG_ERR_RED'] = zeros
+        cat['CAL_MAG_ID_RED'] = zeros
+        print("Couldn't find all calibration magnitudes! Using 0 values")
     
     
     # -- Verify and/or Apply Units:
